@@ -22,9 +22,9 @@ fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfi
     // ... (código de configuración del juego)
     let difficulty_str: &str = difficulty.as_str();
     let mut response_time = match difficulty_str {
-        "easy" => 12,
-        "medium" => 10,
-        "hard" => 8,
+        "Easy" | "easy" => 12,
+        "Medium" | "medium" => 10,
+        "Hard" | "hard" => 8,
         _ => panic!("Invalid difficulty"),
     };
 
