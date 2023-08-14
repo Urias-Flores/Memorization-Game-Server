@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::{ Rocket };
+use rocket::Rocket;
 use rocket_contrib::json::Json;
 use serde::Serialize;
 
@@ -21,7 +21,8 @@ struct GameConfig {
 fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfig> {
     // ... (código de configuración del juego)
     if(difficulty.to_string() == "easy".to_string()){
-
+        let decrement = 0.50;
+        
     }
     if(difficulty.to_string() == "medium".to_string()){
 
@@ -43,9 +44,15 @@ fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfi
     Json(game_config)
 }
 
+#[get("/")]
+fn helloword() -> String {
+    "Hello, world!".to_string()
+}
+
 fn rocket() -> Rocket {
     rocket::ignite()
         .mount("/", routes![get_game_config])
+        .mount("/", routes![helloword])
 }
 
 fn main() {
