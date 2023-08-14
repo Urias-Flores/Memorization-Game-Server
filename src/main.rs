@@ -20,19 +20,29 @@ struct GameConfig {
 #[get("/game_config/<difficulty>/<stage>/<level>")]
 fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfig> {
     // ... (código de configuración del juego)
-    if(difficulty.to_string() == "easy".to_string()){
-        let decrement = 0.50;
-        
-    }
-    if(difficulty.to_string() == "medium".to_string()){
+    let difficulty_str: &str = difficulty.as_str();
+    let mut response_time = match difficulty_str {
+        "easy" => 12,
+        "medium" => 10,
+        "hard" => 8,
+        _ => panic!("Invalid difficulty"),
+    };
 
-    }
-    if(difficulty.to_string() == "hard".to_string()){
+    response_time -= (stage - 1);
 
-    }
-    let num_images = (stage * 5) as usize;  // Número de imágenes basado en el stage
-    let display_time = 5000 - (level * 500);  // Tiempo de visualización reducido por nivel
-    let response_time = 3000 - (level * 300);  // Tiempo de respuesta reducido por nivel
+    let num_images = match stage {
+        1 | 2 => 4,
+        3 | 4 => 6,
+        5 | 6 => 8,
+        _ => panic!("Invalid stage"),
+    };
+
+    let display_time = match level {
+        1 | 2 => 3,
+        3 | 4 => 2,
+        5 => 1,
+        _ => panic!("Invalid level"),
+    };  // Tiempo de respuesta reducido por nivel
 
     // Construye y devuelve la configuración del juego como JSON
     let game_config = GameConfig {
@@ -44,15 +54,9 @@ fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfi
     Json(game_config)
 }
 
-#[get("/")]
-fn helloword() -> String {
-    "Hello, world!".to_string()
-}
-
 fn rocket() -> Rocket {
     rocket::ignite()
         .mount("/", routes![get_game_config])
-        .mount("/", routes![helloword])
 }
 
 fn main() {
