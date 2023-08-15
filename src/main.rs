@@ -4,16 +4,29 @@
 extern crate rocket;
 
 use rocket::Rocket;
+use rocket_cors::CorsOptions;
+use rocket_cors::AllowedOrigins;
 use rocket_contrib::json::Json;
 use serde::Serialize;
+use rand::prelude::*;
 
 
 // Define una estructura para representar la configuración del juego
 #[derive(Serialize)]
 struct GameConfig {
-    num_images: usize,
+    images: Vec<u32>,
     display_time: u32,
     response_time: u32,
+}
+
+fn generate_random_numbers(count: usize) -> Vec<u32> {
+    let mut rng = thread_rng(); // Crea un generador de números aleatorios
+    let mut numbers: Vec<u32> = (1..=10).collect(); // Crea un arreglo de números del 1 al 10
+
+    numbers.shuffle(&mut rng); // Mezcla los números aleatoriamente
+    numbers.truncate(count); // Reduce el tamaño del arreglo al valor deseado
+
+    numbers
 }
 
 // Define un estado compartido para la configuración del juego
@@ -28,7 +41,7 @@ fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfi
         _ => panic!("Invalid difficulty"),
     };
 
-    response_time -= (stage - 1);
+    response_time -= stage - 1;
 
     let num_images = match stage {
         1 | 2 => 4,
@@ -44,9 +57,11 @@ fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfi
         _ => panic!("Invalid level"),
     };  // Tiempo de respuesta reducido por nivel
 
+    let images = generate_random_numbers(num_images);
+
     // Construye y devuelve la configuración del juego como JSON
     let game_config = GameConfig {
-        num_images,
+        images,
         display_time,
         response_time,
     };
@@ -55,7 +70,14 @@ fn get_game_config(difficulty: String, stage: u32, level: u32) -> Json<GameConfi
 }
 
 fn rocket() -> Rocket {
+    let cors = CorsOptions::default()
+        .allowed_origins(AllowedOrigins::some_exact(&["http://localhost:5173"]))
+        .allow_credentials(true)
+        .to_cors()
+        .expect("Error while building CORS");
+
     rocket::ignite()
+        .attach(cors)
         .mount("/", routes![get_game_config])
 }
 
